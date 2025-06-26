@@ -1,9 +1,11 @@
 //import { useState } from "react";
 //import { tempWatchedData } from "../../data/tempWatchedData";
-import { ListBox } from "./movielist/ListBox";
-import { WatchedBox } from "./watchedMovies/WatchedBox";
-//export default function Main({ movies }) { 
-  export default function Main({ children }) {
+
+// import { ListBox } from "./movielist/Box";
+// import { WatchedBox } from "./watchedMovies/WatchedBox";
+import Box from "./movielist/Box";
+//export default function Main({ movies }) {
+export default function Main({ children }) {
   // const [watched, setWatched] = useState(tempWatchedData);
   // const [isOpen2, setIsOpen2] = useState(true);
 
@@ -20,8 +22,3 @@ import { WatchedBox } from "./watchedMovies/WatchedBox";
     </div>
   );
 }
-
-
-
-
-
