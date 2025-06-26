@@ -1,4 +1,4 @@
-export function WatchedMovie({ movie }) {
+export default function WatchedMovie({ movie }) {
   return (
     <li key={movie.imdbID}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />

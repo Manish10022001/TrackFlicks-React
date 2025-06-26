@@ -1,5 +1,6 @@
-import { WatchedMovie } from "./WatchedMovie";
-export function WatchedMovieList({ watched }) {
+import WatchedMovie from "./WatchedMovie";
+
+export default function WatchedMovieList({ watched }) {
   return (
     <ul className="list">
       {/* now watched.map as we use data from tempwatched data */}
