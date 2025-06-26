@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { tempMovieData } from "./data/tempMovieData";
 
 import NavBar from "./components/nav-bar/NavBar";
