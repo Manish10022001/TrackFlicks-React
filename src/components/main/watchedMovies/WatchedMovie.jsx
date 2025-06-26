@@ -3,7 +3,7 @@ export function WatchedMovie({ movie }) {
     <li key={movie.imdbID}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
-      <p>
+      <div>
         <p>
           <span>⭐️</span>
           <span>{movie.imdbRating}</span>
@@ -16,7 +16,7 @@ export function WatchedMovie({ movie }) {
           <span>⏳</span>
           <span>{movie.runtime}</span>
         </p>
-      </p>
+      </div>
     </li>
   );
 }
