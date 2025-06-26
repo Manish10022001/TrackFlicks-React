@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { MovieList } from "./MovieList";
 
-
-export function ListBox({ movies }) {
+//removie movie prop, and call children to resolve prop drilling
+export function ListBox({ children }) {
   const [isOpen1, setIsOpen1] = useState(true);
   //const [movies, setMovies] = useState(tempMovieData);
   return (
@@ -15,7 +15,8 @@ export function ListBox({ movies }) {
       >
         {isOpen1 ? "-" : "+"}
       </button>
-      {isOpen1 && <MovieList movies={movies} />}
+      {/* <MovieList movies={movies} /> no longer needed -children used instead paste it in app, listbox component as children*/}
+      {isOpen1 && children} 
     </div>
   );
 }

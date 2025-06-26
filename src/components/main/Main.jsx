@@ -2,7 +2,8 @@
 //import { tempWatchedData } from "../../data/tempWatchedData";
 import { ListBox } from "./movielist/ListBox";
 import { WatchedBox } from "./watchedMovies/WatchedBox";
-export default function Main({ movies }) {
+//export default function Main({ movies }) { 
+  export default function Main({ children }) {
   // const [watched, setWatched] = useState(tempWatchedData);
   // const [isOpen2, setIsOpen2] = useState(true);
 
@@ -12,9 +13,10 @@ export default function Main({ movies }) {
 
   return (
     <div className="main">
-      <ListBox movies={movies} />
-      {/* watched movies - tempwatcheddata */}
-      <WatchedBox />
+      {/* <ListBox movies={movies} />
+      {/* watched movies - tempwatcheddata 
+      <WatchedBox /> */}
+      {children}
     </div>
   );
 }
