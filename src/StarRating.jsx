@@ -11,7 +11,8 @@ const starContainerStyle = {
 const textStyle = {
   lineHeight: "1",
   margin: "0",
-}; //default value  below
+}; 
+//default values  below
 export default function StarRating({
   maxRating = 5,
   
