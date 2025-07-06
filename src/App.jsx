@@ -24,9 +24,6 @@ export default function App() {
   //const [movies, setMovies] = useState(tempMovieData); //tempmovie data
   // const [watched, setWatched] = useState(tempWatchedData);
 
-  // const avgImbdRating = average(watched.map((movie)=> movie.imdbRating));
-  // const avgRuntime = average(watched.map((movie)=> movie.runtime));
-  // const avgUserRating = average(watched.map((movie)=>movie.userRating));
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
   return (
