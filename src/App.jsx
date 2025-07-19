@@ -33,13 +33,21 @@ export default function App() {
 
   //use useEffect to register event, event is the function here which contain sideeffect which we want to register, so this function will execute afteer render.
   //second argument pass empty array to useeffect, this means this effect will only execute as component mount
-  useEffect(function(){
-    fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-    .then((res) => res.json())
-    .then((data) => setMovies(data.Search));
-  },[])
+  // useEffect(function(){
+  //   fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+  //   .then((res) => res.json())
+  //   .then((data) => setMovies(data.Search));
+  // },[])
 
-  
+  //async function
+  useEffect(function(){
+    async function fetchMovies(){
+      const res = await fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`);
+      const data = await res.json();
+      setMovies(data.Search);
+    }
+    fetchMovies();
+  },[])  
   return (
     <div>
       {/* <NavBar movies={movies} /> */}
