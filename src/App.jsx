@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState } from "react";
 
 import { tempMovieData } from "./data/tempMovieData";
 
@@ -17,18 +17,29 @@ import WatchedSummary from "./components/main/watchedMovies/WatchedSummary";
 import WatchedMovieList from "./components/main/watchedMovies/WatchedMovieList";
 
 import { tempWatchedData } from "./data/tempWatchedData";
-
+const KEY = "b0a4f46f";
 export default function App() {
   //const [isOpen1, setIsOpen1] = useState(true);//first box
   //const [isOpen2, setIsOpen2] = useState(true);//second box
   //const [movies, setMovies] = useState(tempMovieData); //tempmovie data
   // const [watched, setWatched] = useState(tempWatchedData);
 
-  // const avgImbdRating = average(watched.map((movie)=> movie.imdbRating));
-  // const avgRuntime = average(watched.map((movie)=> movie.runtime));
-  // const avgUserRating = average(watched.map((movie)=>movie.userRating));
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  //not a right way to fetch data or api
+  // fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+  //   .then((res) => res.json())
+  //   .then((data) => console.log(data.search));
+
+  //use useEffect to register event, event is the function here which contain sideeffect which we want to register, so this function will execute afteer render.
+  //second argument pass empty array to useeffect, this means this effect will only execute as component mount
+  useEffect(function(){
+    fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+    .then((res) => res.json())
+    .then((data) => setMovies(data.Search));
+  },[])
+
+  
   return (
     <div>
       {/* <NavBar movies={movies} /> */}
