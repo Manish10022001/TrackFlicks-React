@@ -1,4 +1,4 @@
-import {useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { tempMovieData } from "./data/tempMovieData";
 
@@ -12,7 +12,7 @@ import { Search } from "./components/nav-bar/NavBar";
 //import { WatchedBox } from "./components/main/watchedMovies/WatchedBox";
 import Box from "./components/main/movielist/Box";
 import { MovieList } from "./components/main/movielist/MovieList";
-
+import { Loader } from "./components/main/movielist/Loader";
 import WatchedSummary from "./components/main/watchedMovies/WatchedSummary";
 import WatchedMovieList from "./components/main/watchedMovies/WatchedMovieList";
 
@@ -26,6 +26,7 @@ export default function App() {
 
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   //not a right way to fetch data or api
   // fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
   //   .then((res) => res.json())
@@ -40,14 +41,22 @@ export default function App() {
   // },[])
 
   //async function
-  useEffect(function(){
-    async function fetchMovies(){
-      const res = await fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`);
+  useEffect(function () {
+    async function fetchMovies() {
+      setIsLoading(true);
+
+      const res = await fetch(
+        `https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`
+      );
       const data = await res.json();
       setMovies(data.Search);
+
+      setIsLoading(false); //for it to disappear
     }
     fetchMovies();
-  },[])  
+  }, []);
+
+  //after useEffect, want to add simple loading indicator, so show movies are loading, 1.create state 2.call it in useEffect, 3. call it in App with condition and create simple component
   return (
     <div>
       {/* <NavBar movies={movies} /> */}
@@ -67,9 +76,7 @@ export default function App() {
         {/* <ListBox >
           <MovieList movies={movies} />
         </ListBox> */}
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMovieList watched={watched} />
