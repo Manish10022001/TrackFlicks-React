@@ -1,6 +1,5 @@
-import { useState } from "react";
 
-export default function NavBar({ children }) {
+export default function NavBar({ children, query, setQuery }) {
   //const [query, setQuery] = useState("");
 
   return (
@@ -12,7 +11,7 @@ export default function NavBar({ children }) {
           <Search />
           <NumResults movies={movies} /> */}
       <Logo />
-      <Search />
+      <Search query={query} setQuery={setQuery}/>
       {children}
     </nav>
   );
@@ -25,8 +24,8 @@ export function Logo() {
     </div>
   );
 }
-export function Search() {
-  const [query, setQuery] = useState("");
+export function Search({query, setQuery}) { //, m1: after error handle, lift state up and pass props
+  //const [query, setQuery] = useState("");
   return (
     <div>
       <input
