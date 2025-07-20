@@ -5,9 +5,8 @@ import { tempMovieData } from "./data/tempMovieData";
 import NavBar from "./components/nav-bar/NavBar";
 import Main from "./components/main/Main";
 
-import { Logo } from "./components/nav-bar/NavBar";
-import { NumResults } from "./components/nav-bar/NavBar";
-import { Search } from "./components/nav-bar/NavBar";
+import { Logo, Search, NumResults } from "./components/nav-bar/NavBar";
+
 //import { ListBox } from "./components/main/movielist/Box";
 //import { WatchedBox } from "./components/main/watchedMovies/WatchedBox";
 import Box from "./components/main/movielist/Box";
@@ -18,6 +17,7 @@ import WatchedMovieList from "./components/main/watchedMovies/WatchedMovieList";
 
 import { tempWatchedData } from "./data/tempWatchedData";
 const KEY = "b0a4f46f";
+const query = "dkfdjfkdjfk"
 export default function App() {
   //const [isOpen1, setIsOpen1] = useState(true);//first box
   //const [isOpen2, setIsOpen2] = useState(true);//second box
@@ -27,6 +27,7 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   //not a right way to fetch data or api
   // fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
   //   .then((res) => res.json())
@@ -43,15 +44,26 @@ export default function App() {
   //async function
   useEffect(function () {
     async function fetchMovies() {
-      setIsLoading(true);
+      try {
+        setIsLoading(true);
 
-      const res = await fetch(
-        `https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        ); //interstellar
+        if (!res.ok)
+          throw new Error("Something went wrong with fetching movies");
 
-      setIsLoading(false); //for it to disappear
+        const data = await res.json();
+        //erro message if movie not found
+        if(data.Response === "False") throw new Error("Movie not found")
+        setMovies(data.Search);
+
+        //setIsLoading(false); //for it to disappear
+      } catch (err) {
+        setError(err.message);
+      } finally{ //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
+        setIsLoading(false); //for it to disappear
+      }
     }
     fetchMovies();
   }, []);
@@ -76,13 +88,27 @@ export default function App() {
         {/* <ListBox >
           <MovieList movies={movies} />
         </ListBox> */}
-        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
+          {isLoading && <Loader />}
+          {!error && !isLoading && <MovieList movies={movies} />}
+          {error && <ErrorMessage message = {error}/>}
+        </Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMovieList watched={watched} />
         </Box>
         {/* <WatchedBox /> */}
       </Main>
+    </div>
+  );
+}
+
+function ErrorMessage({ message}) {
+  return (
+    <div className = "error">
+      <span>⛔</span>
+      {message}
     </div>
   );
 }
