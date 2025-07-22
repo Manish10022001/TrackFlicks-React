@@ -55,13 +55,15 @@ export default function App() {
   //async function
   useEffect(
     function () {
+      //p-3 a
+      const controller = new AbortController();
       async function fetchMovies() {
         try {
           setIsLoading(true);
           setError("");
-          const res = await fetch(
-            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-          ); //interstellar
+          const res = await fetch( 
+            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,{signal: controller.signal}
+          ); //interstellar                                    //{signal: controller.signal} p-3b
           if (!res.ok)
             throw new Error("Something went wrong with fetching movies");
 
@@ -69,12 +71,16 @@ export default function App() {
           //erro message if movie not found
           if (data.Response === "False" || !data.Search)
             throw new Error("Movie not found");
+
           setMovies(data.Search);
-          console.log(data.search);
+          setError("");
           //setIsLoading(false); //for it to disappear
         } catch (err) {
           //console.log(err.message);
-          setError(err.message);
+          if(err.name !== "AbortError"){
+            setError(err.message);
+          }
+          
         } finally {
           //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
           setIsLoading(false); //for it to disappear
@@ -86,6 +92,11 @@ export default function App() {
         return;
       }
       fetchMovies();
+      
+      //p3c
+      return function(){
+        controller.abort();
+      }
     },
     [query]
   );
@@ -98,6 +109,10 @@ export default function App() {
 
   //c1=> to handle close button , now we nneed button on clicking selected movie to disappear ,so create event functiona and pass it as prop to moviedetails and create button btn-back in movie details and pass this prop to it
   //d => now want movie details to show when clicked, so for details to show we need to give useEffect for that so that it is show on each mount or render.
+  //p -> now to change the page title to movie we are currentlly watching, we want to title to appear of the movie selected, so need to make changes in moviedetails component. and as title is outside of component so it is a sideeffect so need to use useEffect.
+  //but now if we deselect or return to home page, then also title still remains same, so we need useEffect cleanup function. clean up is simply function that we return from an effect
+  //p-3: cleanup data fetching: also need to cleanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
+
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -160,11 +175,22 @@ function MovieDetails({ selectedId, onCloseMovie }) {
           );
       const data = await res.json();
       setMovie(data);
-      console.log(data);//now to get this data which is invisible in visible part we need to create state
+      //console.log(data);//now to get this data which is invisible in visible part we need to create state
       setIsLoading(false);
     }
     getMovieDetails();
   },[selectedId])
+
+  //p-1
+  useEffect(function(){
+    if(!title) return;
+    document.title = `Movie | ${title}`
+
+    return function(){
+      document.title= "trackFlicks"
+      //console.log(`Clean up effect for movie ${title}`)
+    }
+  },[title]) //p-2 cleanup: some time it give undefined we don't want undefined to appear so we give if condition: if no title then just return.
   return (
     <div className="details">
       {
