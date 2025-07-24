@@ -171,7 +171,7 @@ export default function App() {
               <WatchedSummary watched={watched} />
               <WatchedMovieList
                 watched={watched}
-                onDeleteWatched={handleDeleteWatched} //r2-a- here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
+                onDeleteWatched={handleDeleteWatched} //r2-a - here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
               />
             </>
           )}
@@ -222,6 +222,22 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          onCloseMovie();
+        }
+      }
+      document.addEventListener("keydown", callback);
+
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [onCloseMovie]
+  );
+
   //d-2
   useEffect(
     function () {
