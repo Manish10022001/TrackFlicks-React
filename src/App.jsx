@@ -19,6 +19,7 @@ import StarRating from "./StarRating"
 
 const KEY = "b0a4f46f";
 //const tempQuery = "Interstellar";
+//const tempQuery = "Interstellar";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
@@ -46,12 +47,12 @@ export default function App() {
 
   //s4 now need to do little prop drilling
   function handleSelectMovie(id) {
-    //setSelectedId(id); c4: below code: if we click on the same movie again then aslo it should close so 
-    setSelectedId((selectedId)=>(id===selectedId)? null : id);
+    //setSelectedId(id); c4: below code: if we click on the same movie again then aslo it should close so
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
   }
 
   //c1 pass it as prop to movie details(prop drilling)
-  function handleCloseMovie(){
+  function handleCloseMovie() {
     setSelectedId(null);
   }
   //w1
@@ -81,8 +82,9 @@ export default function App() {
         try {
           setIsLoading(true);
           setError("");
-          const res = await fetch( 
-            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,{signal: controller.signal}
+          const res = await fetch(
+            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            { signal: controller.signal }
           ); //interstellar                                    //{signal: controller.signal} p-3b
           if (!res.ok)
             throw new Error("Something went wrong with fetching movies");
@@ -101,7 +103,6 @@ export default function App() {
             console.log(err.message);
             setError(err.message);
           }
-          
         } finally {
           //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
           setIsLoading(false); //for it to disappear
@@ -113,12 +114,13 @@ export default function App() {
         return;
       }
       handleCloseMovie(); //to close previous movie details when searching for new one
+      handleCloseMovie(); //to close previous movie details when searching for new one
       fetchMovies();
-      
+
       //p3c
-      return function(){
+      return function () {
         controller.abort();
-      }
+      };
     },
     [query]
   );
@@ -133,6 +135,8 @@ export default function App() {
   //d => now want movie details to show when clicked, so for details to show we need to give useEffect for that so that it is show on each mount or render.
   //p -> now to change the page title to movie we are currentlly watching, we want to title to appear of the movie selected, so need to make changes in moviedetails component. and as title is outside of component so it is a sideeffect so need to use useEffect.
   //but now if we deselect or return to home page, then also title still remains same, so we need useEffect cleanup function. clean up is simply function that we return from an effect
+  //p-3: cleanup data fetching: also need to c
+  // leanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
   //p-3: cleanup data fetching: also need to c
   // leanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
 
@@ -154,7 +158,8 @@ export default function App() {
           {isLoading && <Loader />}
           {!error && !isLoading && (
             <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
-          )}                              {/*s5 */}
+          )}{" "}
+          {/*s5 */}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
@@ -182,9 +187,10 @@ export default function App() {
 }
 //s2
 function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
+function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   //d-5
   const [isLoading, setIsLoading] = useState(false);
- //d-3   
+  //d-3
   const [movie, setMovie] = useState({});
   //destructure object
   //w-4a
@@ -195,7 +201,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const watchedUserRating = watched.find((movie)=>movie.imdbID === selectedId)?.userRating;
   const {
     Title: title,
-    Year : year,
+    Year: year,
     Poster: poster,
     Runtime: runtime,
     imdbRating,
@@ -235,37 +241,46 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   );
 
   //d-2
-  useEffect(function() {
-    async function getMovieDetails(){
-      setIsLoading(true);
-      const res = await fetch(
-            `https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`
-          );
-      const data = await res.json();
-      setMovie(data);
-      //console.log(data);//now to get this data which is invisible in visible part we need to create state
-      setIsLoading(false);
-    }
-    getMovieDetails();
-  },[selectedId])
+  useEffect(
+    function () {
+      async function getMovieDetails() {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`
+        );
+        const data = await res.json();
+        setMovie(data);
+        //console.log(data);//now to get this data which is invisible in visible part we need to create state
+        setIsLoading(false);
+      }
+      getMovieDetails();
+    },
+    [selectedId]
+  );
 
   //p-1
-  useEffect(function(){
-    if(!title) return;
-    document.title = `Movie | ${title}`
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
 
-    return function(){
-      document.title= "trackFlicks"
-      //console.log(`Clean up effect for movie ${title}`)
-    }
-  },[title]) //p-2 cleanup: some time it give undefined we don't want undefined to appear so we give if condition: if no title then just return.
+      return function () {
+        document.title = "trackFlicks";
+        //console.log(`Clean up effect for movie ${title}`)
+      };
+    },
+    [title]
+  ); //p-2 cleanup: some time it give undefined we don't want undefined to appear so we give if condition: if no title then just return.
   return (
     <div className="details">
-      {
-        isLoading ? <Loader /> : (
+      {isLoading ? (
+        <Loader />
+      ) : (
         <>
           <header>
-            <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
+            </button>
             <img src={poster} alt={`Poster of ${movie} movie`} />
             <div className="details-overview">
               <h2>{title}</h2>
@@ -322,4 +337,5 @@ function ErrorMessage({ message }) {
       {message}
     </div>
   );
+}
 }
