@@ -14,8 +14,7 @@ import WatchedSummary from "./components/main/watchedMovies/WatchedSummary";
 import WatchedMovieList from "./components/main/watchedMovies/WatchedMovieList";
 import { tempWatchedData } from "./data/tempWatchedData";
 
-import StarRating from "./StarRating"
-
+import StarRating from "./StarRating";
 
 const KEY = "b0a4f46f";
 //const tempQuery = "Interstellar";
@@ -46,22 +45,22 @@ export default function App() {
 
   //s4 now need to do little prop drilling
   function handleSelectMovie(id) {
-    //setSelectedId(id); c4: below code: if we click on the same movie again then aslo it should close so 
-    setSelectedId((selectedId)=>(id===selectedId)? null : id);
+    //setSelectedId(id); c4: below code: if we click on the same movie again then aslo it should close so
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
   }
 
   //c1 pass it as prop to movie details(prop drilling)
-  function handleCloseMovie(){
+  function handleCloseMovie() {
     setSelectedId(null);
   }
   //w1
-  function handleAddWatched(movie){
-    setWatched((watched)=>[...watched, movie])
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
   }
 
   //r1- function or event to remove movie from watched list
-  function handleDeleteWatched(id){
-    setWatched((watched)=> watched.filter((movie)=>movie.imdbID !== id))
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
   // useEffect( function(){
   //   document.addEventListener("keydown", function(e){
@@ -81,8 +80,9 @@ export default function App() {
         try {
           setIsLoading(true);
           setError("");
-          const res = await fetch( 
-            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,{signal: controller.signal}
+          const res = await fetch(
+            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            { signal: controller.signal }
           ); //interstellar                                    //{signal: controller.signal} p-3b
           if (!res.ok)
             throw new Error("Something went wrong with fetching movies");
@@ -97,11 +97,10 @@ export default function App() {
           //setIsLoading(false); //for it to disappear
         } catch (err) {
           //console.log(err.message);
-          if(err.name !== "AbortError"){
+          if (err.name !== "AbortError") {
             console.log(err.message);
             setError(err.message);
           }
-          
         } finally {
           //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
           setIsLoading(false); //for it to disappear
@@ -114,11 +113,11 @@ export default function App() {
       }
       handleCloseMovie(); //to close previous movie details when searching for new one
       fetchMovies();
-      
+
       //p3c
-      return function(){
+      return function () {
         controller.abort();
-      }
+      };
     },
     [query]
   );
@@ -137,7 +136,7 @@ export default function App() {
   // leanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
 
   //e => want to add effect so that by pressing escape(esc) key on laptop, movie details should close, now it is a side effect so we need to use useEffect.
-  //w -> watched m;ovie list 
+  //w -> watched m;ovie list
   //r -> remove movie from watched list
   return (
     <div>
@@ -154,23 +153,25 @@ export default function App() {
           {isLoading && <Loader />}
           {!error && !isLoading && (
             <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
-          )}                              {/*s5 */}
+          )}{" "}
+          {/*s5 */}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
           {/* s3 */}
           {selectedId ? (
-            <MovieDetails 
-              selectedId={selectedId} 
-              onCloseMovie={handleCloseMovie} 
+            <MovieDetails
+              selectedId={selectedId}
+              onCloseMovie={handleCloseMovie}
               onAddWatched={handleAddWatched} //w2
-              watched={watched}/> //w2  //w5- we dont want to repeat the movie in watched list, we just want to change rating, not add it again and again to list, so we pass watched array as prop
+              watched={watched}
+            /> //w2  //w5- we dont want to repeat the movie in watched list, we just want to change rating, not add it again and again to list, so we pass watched array as prop
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovieList 
-                watched={watched} 
-                onDeleteWatched = { handleDeleteWatched} //r2-a - here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
+              <WatchedMovieList
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched} //r2-a- here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
               />
             </>
           )}
@@ -184,18 +185,20 @@ export default function App() {
 function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   //d-5
   const [isLoading, setIsLoading] = useState(false);
- //d-3   
+  //d-3
   const [movie, setMovie] = useState({});
   //destructure object
   //w-4a
   const [userRating, setUserRating] = useState("");
   //w-5b , now after this we have to put ternary condition on star rating and add button
-  const isWatched = watched.map((movie)=> movie.imdbID).includes(selectedId);
+  const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
   //W-5 C, to get user rating to show on the button after giving rating
-  const watchedUserRating = watched.find((movie)=>movie.imdbID === selectedId)?.userRating;
+  const watchedUserRating = watched.find(
+    (movie) => movie.imdbID === selectedId
+  )?.userRating;
   const {
     Title: title,
-    Year : year,
+    Year: year,
     Poster: poster,
     Runtime: runtime,
     imdbRating,
@@ -206,52 +209,60 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     Genre: genre,
   } = movie;
   //w-3
-  function handleAdd(){
-    const newWatchedMovie={
+  function handleAdd() {
+    const newWatchedMovie = {
       imdbID: selectedId,
       title,
       year,
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
-      userRating //w4a
+      userRating, //w4a
     };
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
-
   //d-2
-  useEffect(function() {
-    async function getMovieDetails(){
-      setIsLoading(true);
-      const res = await fetch(
-            `https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`
-          );
-      const data = await res.json();
-      setMovie(data);
-      //console.log(data);//now to get this data which is invisible in visible part we need to create state
-      setIsLoading(false);
-    }
-    getMovieDetails();
-  },[selectedId])
+  useEffect(
+    function () {
+      async function getMovieDetails() {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`
+        );
+        const data = await res.json();
+        setMovie(data);
+        //console.log(data);//now to get this data which is invisible in visible part we need to create state
+        setIsLoading(false);
+      }
+      getMovieDetails();
+    },
+    [selectedId]
+  );
 
   //p-1
-  useEffect(function(){
-    if(!title) return;
-    document.title = `Movie | ${title}`
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
 
-    return function(){
-      document.title= "trackFlicks"
-      //console.log(`Clean up effect for movie ${title}`)
-    }
-  },[title]) //p-2 cleanup: some time it give undefined we don't want undefined to appear so we give if condition: if no title then just return.
+      return function () {
+        document.title = "trackFlicks";
+        //console.log(`Clean up effect for movie ${title}`)
+      };
+    },
+    [title]
+  ); //p-2 cleanup: some time it give undefined we don't want undefined to appear so we give if condition: if no title then just return.
   return (
     <div className="details">
-      {
-        isLoading ? <Loader /> : (
+      {isLoading ? (
+        <Loader />
+      ) : (
         <>
           <header>
-            <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
+            </button>
             <img src={poster} alt={`Poster of ${movie} movie`} />
             <div className="details-overview">
               <h2>{title}</h2>
@@ -270,24 +281,23 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
             <div className="rating">
               {!isWatched ? (
                 <>
-                  <StarRating 
-                    maxRating={10} 
-                    size={24} 
+                  <StarRating
+                    maxRating={10}
+                    size={24}
                     onSetRating={setUserRating}
                   />
                   {/* w-2 */}
                   {userRating > 0 && (
-                    <button  
-                      className="btn-add" 
-                      onClick={handleAdd}
-                    >
+                    <button className="btn-add" onClick={handleAdd}>
                       + Add to list
                     </button>
-                  )} 
-                </> 
-                ): (
-                  <p>You rated this movie {watchedUserRating} <span>⭐</span></p>
-                )}
+                  )}
+                </>
+              ) : (
+                <p>
+                  You rated this movie {watchedUserRating} <span>⭐</span>
+                </p>
+              )}
             </div>
             <p>
               <em>{plot}</em>
