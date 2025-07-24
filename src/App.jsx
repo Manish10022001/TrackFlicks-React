@@ -15,8 +15,10 @@ import WatchedMovieList from "./components/main/watchedMovies/WatchedMovieList";
 import { tempWatchedData } from "./data/tempWatchedData";
 
 import StarRating from "./StarRating"
+
+
 const KEY = "b0a4f46f";
-const tempQuery = "Interstellar";
+//const tempQuery = "Interstellar";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
@@ -52,6 +54,24 @@ export default function App() {
   function handleCloseMovie(){
     setSelectedId(null);
   }
+  //w1
+  function handleAddWatched(movie){
+    setWatched((watched)=>[...watched, movie])
+  }
+
+  //r1- function or event to remove movie from watched list
+  function handleDeleteWatched(id){
+    setWatched((watched)=> watched.filter((movie)=>movie.imdbID !== id))
+  }
+  // useEffect( function(){
+  //   document.addEventListener("keydown", function(e){
+  //     if(e.code === "Escape"){
+  //       handleCloseMovie();
+  //       console.log("Closing");
+  //     }
+  //   })
+  // },[] ) as we press escape again and again it is called even when we have already close the movie, so we apply it in moviedetails, i.e when component is mounted.
+
   //async function
   useEffect(
     function () {
@@ -78,6 +98,7 @@ export default function App() {
         } catch (err) {
           //console.log(err.message);
           if(err.name !== "AbortError"){
+            console.log(err.message);
             setError(err.message);
           }
           
@@ -91,6 +112,7 @@ export default function App() {
         setError("");
         return;
       }
+      handleCloseMovie(); //to close previous movie details when searching for new one
       fetchMovies();
       
       //p3c
@@ -111,8 +133,12 @@ export default function App() {
   //d => now want movie details to show when clicked, so for details to show we need to give useEffect for that so that it is show on each mount or render.
   //p -> now to change the page title to movie we are currentlly watching, we want to title to appear of the movie selected, so need to make changes in moviedetails component. and as title is outside of component so it is a sideeffect so need to use useEffect.
   //but now if we deselect or return to home page, then also title still remains same, so we need useEffect cleanup function. clean up is simply function that we return from an effect
-  //p-3: cleanup data fetching: also need to cleanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
+  //p-3: cleanup data fetching: also need to c
+  // leanup data fetching, as right now v r creating too many http request as we search for movies, so we use AbortController it is browser API not of React.
 
+  //e => want to add effect so that by pressing escape(esc) key on laptop, movie details should close, now it is a side effect so we need to use useEffect.
+  //w -> watched m;ovie list 
+  //r -> remove movie from watched list
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -134,11 +160,18 @@ export default function App() {
         <Box>
           {/* s3 */}
           {selectedId ? (
-            <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie}/>
+            <MovieDetails 
+              selectedId={selectedId} 
+              onCloseMovie={handleCloseMovie} 
+              onAddWatched={handleAddWatched} //w2
+              watched={watched}/> //w2  //w5- we dont want to repeat the movie in watched list, we just want to change rating, not add it again and again to list, so we pass watched array as prop
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} />
+              <WatchedMovieList 
+                watched={watched} 
+                onDeleteWatched = { handleDeleteWatched} //r2-a - here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
+              />
             </>
           )}
         </Box>
@@ -148,12 +181,18 @@ export default function App() {
   );
 }
 //s2
-function MovieDetails({ selectedId, onCloseMovie }) {
+function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   //d-5
   const [isLoading, setIsLoading] = useState(false);
  //d-3   
   const [movie, setMovie] = useState({});
   //destructure object
+  //w-4a
+  const [userRating, setUserRating] = useState("");
+  //w-5b , now after this we have to put ternary condition on star rating and add button
+  const isWatched = watched.map((movie)=> movie.imdbID).includes(selectedId);
+  //W-5 C, to get user rating to show on the button after giving rating
+  const watchedUserRating = watched.find((movie)=>movie.imdbID === selectedId)?.userRating;
   const {
     Title: title,
     Year : year,
@@ -166,6 +205,35 @@ function MovieDetails({ selectedId, onCloseMovie }) {
     Director: director,
     Genre: genre,
   } = movie;
+  //w-3
+  function handleAdd(){
+    const newWatchedMovie={
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating //w4a
+    };
+    onAddWatched(newWatchedMovie);
+    onCloseMovie();
+  }
+  useEffect( function(){
+    function callback(e){
+      if(e.code === "Escape"){
+        onCloseMovie();
+      }
+    }
+    document.addEventListener("keydown", callback);
+
+    return function(){
+      document.removeEventListener("keydown", callback )
+    }
+
+    },[onCloseMovie] 
+  );
+
   //d-2
   useEffect(function() {
     async function getMovieDetails(){
@@ -214,7 +282,26 @@ function MovieDetails({ selectedId, onCloseMovie }) {
 
           <section>
             <div className="rating">
-              <StarRating maxRating={10} size={24} />
+              {!isWatched ? (
+                <>
+                  <StarRating 
+                    maxRating={10} 
+                    size={24} 
+                    onSetRating={setUserRating}
+                  />
+                  {/* w-2 */}
+                  {userRating > 0 && (
+                    <button  
+                      className="btn-add" 
+                      onClick={handleAdd}
+                    >
+                      + Add to list
+                    </button>
+                  )} 
+                </> 
+                ): (
+                  <p>You rated this movie {watchedUserRating} <span>⭐</span></p>
+                )}
             </div>
             <p>
               <em>{plot}</em>
