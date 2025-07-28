@@ -63,6 +63,7 @@ export default function App() {
   //w1
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
+
     //l1 -> we do it in useEffect so that is loads one very state update
     //localStorage.setItem("watched",JSON.stringify([...watched, movie]));
   }
@@ -150,7 +151,9 @@ export default function App() {
   //e => want to add effect so that by pressing escape(esc) key on laptop, movie details should close, now it is a side effect so we need to use useEffect.
   //w -> watched m;ovie list
   //r -> remove movie from watched list
+
   //l -> persist the watched list in local storage, do it in 2 parts, 1st watch list state is updated, we'll update the local storage 2nd when app reloads we read that data from local storage and load it in watched list
+
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -184,7 +187,8 @@ export default function App() {
               <WatchedSummary watched={watched} />
               <WatchedMovieList
                 watched={watched}
-                onDeleteWatched={handleDeleteWatched} //r2-a - here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
+
+                onDeleteWatched={handleDeleteWatched} //r2-a- here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
               />
             </>
           )}
@@ -235,6 +239,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
   useEffect(
     function () {
       function callback(e) {
