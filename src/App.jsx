@@ -20,11 +20,18 @@ const KEY = "b0a4f46f";
 //const tempQuery = "Interstellar";
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  // commented for l3: const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null); //s1
+  //l3 -> to read data from local storage and load it in the watched list
+  const [watched, setWatched] = useState(
+    function(){
+      const storedValue = localStorage.getItem("watched");
+      return JSON.parse(storedValue); //json.parse used to removie stringify effect
+    }
+  )
   {
     /*
   useEffect(()=>{
@@ -56,8 +63,14 @@ export default function App() {
   //w1
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
-  }
 
+    //l1 -> we do it in useEffect so that is loads one very state update
+    //localStorage.setItem("watched",JSON.stringify([...watched, movie]));
+  }
+  //l2, this stores the movie data in local storage but not visible , so we update it in useState using callback function i.e it will load every movie on state update
+  useEffect(function(){
+    localStorage.setItem("watched",JSON.stringify(watched))
+  },[watched])
   //r1- function or event to remove movie from watched list
   function handleDeleteWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
@@ -138,6 +151,9 @@ export default function App() {
   //e => want to add effect so that by pressing escape(esc) key on laptop, movie details should close, now it is a side effect so we need to use useEffect.
   //w -> watched m;ovie list
   //r -> remove movie from watched list
+
+  //l -> persist the watched list in local storage, do it in 2 parts, 1st watch list state is updated, we'll update the local storage 2nd when app reloads we read that data from local storage and load it in watched list
+
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -171,6 +187,7 @@ export default function App() {
               <WatchedSummary watched={watched} />
               <WatchedMovieList
                 watched={watched}
+
                 onDeleteWatched={handleDeleteWatched} //r2-a- here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
               />
             </>
@@ -222,6 +239,23 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          onCloseMovie();
+        }
+      }
+      document.addEventListener("keydown", callback);
+
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [onCloseMovie]
+  );
+
   //d-2
   useEffect(
     function () {
