@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { tempMovieData } from "./data/tempMovieData";
 
@@ -26,12 +26,10 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null); //s1
   //l3 -> to read data from local storage and load it in the watched list
-  const [watched, setWatched] = useState(
-    function(){
-      const storedValue = localStorage.getItem("watched");
-      return JSON.parse(storedValue); //json.parse used to removie stringify effect
-    }
-  )
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue); //json.parse used to removie stringify effect
+  });
   {
     /*
   useEffect(()=>{
@@ -68,9 +66,12 @@ export default function App() {
     //localStorage.setItem("watched",JSON.stringify([...watched, movie]));
   }
   //l2, this stores the movie data in local storage but not visible , so we update it in useState using callback function i.e it will load every movie on state update
-  useEffect(function(){
-    localStorage.setItem("watched",JSON.stringify(watched))
-  },[watched])
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watched));
+    },
+    [watched]
+  );
   //r1- function or event to remove movie from watched list
   function handleDeleteWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
@@ -154,6 +155,8 @@ export default function App() {
 
   //l -> persist the watched list in local storage, do it in 2 parts, 1st watch list state is updated, we'll update the local storage 2nd when app reloads we read that data from local storage and load it in watched list
 
+  //ref 1-> we want the focus on search box when the site reloads or mounts(navbar.jsx)
+  //ref 2-> count behind the scenes how many times user clicked different rating before selecting the final one.
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -187,7 +190,6 @@ export default function App() {
               <WatchedSummary watched={watched} />
               <WatchedMovieList
                 watched={watched}
-
                 onDeleteWatched={handleDeleteWatched} //r2-a- here passed as prop becuase it contain the watched movie list and pass prop in watchedmovielist component
               />
             </>
@@ -213,6 +215,19 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
   )?.userRating;
+
+  //ref 2 a: create new ref
+  const countRef = useRef(0);
+  //ref 2 b: updating ref using useEfffect, whener userRating changes
+
+
+  useEffect(
+    function () {
+      if (userRating) countRef.current = countRef.current++;
+   
+    },
+    [userRating]
+  );
   const {
     Title: title,
     Year: year,
@@ -225,6 +240,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     Director: director,
     Genre: genre,
   } = movie;
+
   //w-3
   function handleAdd() {
     const newWatchedMovie = {
@@ -235,6 +251,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating, //w4a
+
+      //ref 2 c->function where new movie is added, create new property, tit should return count
+      countRatingDecisions: countRef.current,
     };
     onAddWatched(newWatchedMovie);
     onCloseMovie();
@@ -345,6 +364,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     </div>
   );
 }
+
 function ErrorMessage({ message }) {
   return (
     <div className="error">
