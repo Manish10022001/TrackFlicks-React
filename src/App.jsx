@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-
+import { useMovies } from "./useMovies";
 import { tempMovieData } from "./data/tempMovieData";
 
 import NavBar from "./components/nav-bar/NavBar";
@@ -19,12 +19,16 @@ import StarRating from "./StarRating";
 const KEY = "b0a4f46f";
 //const tempQuery = "Interstellar";
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  // commented for l3: const [watched, setWatched] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  //ch1.2 -> placed it in useMovies
+  // const [movies, setMovies] = useState([]);
+  // // commented for l3: const [watched, setWatched] = useState([]);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null); //s1
+
+  //ch1.3
+  const { movies, isLoading, error } = useMovies(query);
   //l3 -> to read data from local storage and load it in the watched list
   const [watched, setWatched] = useState(function () {
     const storedValue = localStorage.getItem("watched");
@@ -54,7 +58,7 @@ export default function App() {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
   }
 
-  //c1 pass it as prop to movie details(prop drilling)
+  //c1.1 pass it as prop to movie details(prop drilling)
   function handleCloseMovie() {
     setSelectedId(null);
   }
@@ -85,56 +89,57 @@ export default function App() {
   //   })
   // },[] ) as we press escape again and again it is called even when we have already close the movie, so we apply it in moviedetails, i.e when component is mounted.
 
+  //ch-1: takig this hook and place it in custom hook
   //async function
-  useEffect(
-    function () {
-      //p-3 a
-      const controller = new AbortController();
-      async function fetchMovies() {
-        try {
-          setIsLoading(true);
-          setError("");
-          const res = await fetch(
-            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-            { signal: controller.signal }
-          ); //interstellar                                    //{signal: controller.signal} p-3b
-          if (!res.ok)
-            throw new Error("Something went wrong with fetching movies");
+  // useEffect(
+  //   function () {
+  //     //p-3 a
+  //     const controller = new AbortController();
+  //     async function fetchMovies() {
+  //       try {
+  //         setIsLoading(true);
+  //         setError("");
+  //         const res = await fetch(
+  //           `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+  //           { signal: controller.signal }
+  //         ); //interstellar                                    //{signal: controller.signal} p-3b
+  //         if (!res.ok)
+  //           throw new Error("Something went wrong with fetching movies");
 
-          const data = await res.json();
-          //erro message if movie not found
-          if (data.Response === "False" || !data.Search)
-            throw new Error("Movie not found");
+  //         const data = await res.json();
+  //         //erro message if movie not found
+  //         if (data.Response === "False" || !data.Search)
+  //           throw new Error("Movie not found");
 
-          setMovies(data.Search);
-          setError("");
-          //setIsLoading(false); //for it to disappear
-        } catch (err) {
-          //console.log(err.message);
-          if (err.name !== "AbortError") {
-            console.log(err.message);
-            setError(err.message);
-          }
-        } finally {
-          //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
-          setIsLoading(false); //for it to disappear
-        }
-      }
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-      handleCloseMovie(); //to close previous movie details when searching for new one
-      fetchMovies();
+  //         setMovies(data.Search);
+  //         setError("");
+  //         //setIsLoading(false); //for it to disappear
+  //       } catch (err) {
+  //         //console.log(err.message);
+  //         if (err.name !== "AbortError") {
+  //           console.log(err.message);
+  //           setError(err.message);
+  //         }
+  //       } finally {
+  //         //finally is used so that Loading... disappears otherwise both error msg and loading appears on screen
+  //         setIsLoading(false); //for it to disappear
+  //       }
+  //     }
+  //     if (query.length < 3) {
+  //       setMovies([]);
+  //       setError("");
+  //       return;
+  //     }
+  //     handleCloseMovie(); //to close previous movie details when searching for new one
+  //     fetchMovies();
 
-      //p3c
-      return function () {
-        controller.abort();
-      };
-    },
-    [query]
-  );
+  //     //p3c
+  //     return function () {
+  //       controller.abort();
+  //     };
+  //   },
+  //   [query]
+  // );
 
   //after useEffect, want to add simple loading indicator, so show movies are loading, 1.create state 2.call it in useEffect, 3. call it in App with condition and create simple component
   //after loader we handled errors using try catch.
@@ -157,6 +162,8 @@ export default function App() {
 
   //ref 1-> we want the focus on search box when the site reloads or mounts(navbar.jsx)
   //ref 2-> count behind the scenes how many times user clicked different rating before selecting the final one.
+
+  //ch 1-> custome hook ,  we take all logic that belong together to search for movies and placed it in useMovies custom hook,  then used 4 hooks to achiev that result one useEffect and three useStates and then return waht is necessary for the app to keep working in exactly the same way as before
   return (
     <div>
       <NavBar query={query} setQuery={setQuery}>
@@ -220,11 +227,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const countRef = useRef(0);
   //ref 2 b: updating ref using useEfffect, whener userRating changes
 
-
   useEffect(
     function () {
       if (userRating) countRef.current = countRef.current++;
-   
     },
     [userRating]
   );
